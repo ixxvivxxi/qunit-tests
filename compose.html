@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8 />
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.0.1.css">
+</head>
+<body>
+  <h1>Tests</h1>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="https://code.jquery.com/qunit/qunit-2.0.1.js"></script>
+  <script>
+    function compose() {
+      var funcs = Array.prototype.slice.call(arguments).reverse();
+      return function() {
+        var args = arguments;
+        funcs.forEach(function (func) {
+          args = [func.apply(null, args)];
+        });
+        return args[0];
+      };
+    }
+
+    QUnit.test('это функция', function(assert) {
+      assert.equal(typeof(compose), 'function');
+    });
+
+    QUnit.test('выполняется', function(assert) {
+      var a = function (a) {
+        return a * 100;
+      };
+      var func = compose(a);
+      assert.equal(func(2), 200);
+    });
+
+
+    QUnit.test('выполняется с несколькими аргументами', function(assert) {
+      var a = function (a) {
+        return a / 1000;
+      };
+      var b = function (a) {
+        return a * 1000;
+      };
+      var c = function (a) {
+        return a -1;
+      };
+
+      var func = compose(a,b,c);
+      assert.equal(func(1), 0);
+
+    });
+  </script>
+</body>
+</html>

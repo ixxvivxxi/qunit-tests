@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8 />
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.0.1.css">
+</head>
+<body>
+  <h1>Tests</h1>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="https://code.jquery.com/qunit/qunit-2.0.1.js"></script>
+  <script>
+    function debounce(func, wait) {
+      var timeout;
+      return function() {
+        var context = this,
+        args = arguments;
+
+        var callNow = false && !timeout;
+
+        clearTimeout(timeout);
+
+        timeout = setTimeout(function() {
+          timeout = null;
+          func.apply(context, args);
+        }, wait);
+
+        if (callNow) func.apply(context, args);
+      };
+    }
+
+    QUnit.test('это функция', function(assert) {
+      assert.equal(typeof(debounce), 'function');
+    });
+
+    QUnit.test('выполняется', function(assert) {
+      var done = assert.async();
+      var x = 0;
+
+      var func = debounce(function() {
+        x++;
+      });
+
+      func();
+
+      setTimeout(function() {
+        assert.equal(x, 1);
+        done();
+      }, 100);
+
+    });
+
+    QUnit.test('выполняется только один раз за указанное время', function(assert) {
+      var done = assert.async();
+      var x = 0;
+      var func = debounce(function() {
+        x++;
+      }, 200);
+      func();
+      func();
+      func();
+      func();
+
+      setTimeout(function() {
+        assert.equal(x, 1);
+        done();
+      }, 200);
+    });
+
+    QUnit.test('выполняется еще раз после окончания времени', function(assert) {
+      var done = assert.async();
+      var x = 0;
+
+      var func = debounce(function() {
+        x++;
+      }, 100);
+
+      func();
+
+      setTimeout(function() {
+        func();
+      }, 100);
+
+      setTimeout(function() {
+        assert.equal(x, 2);
+        done();
+      }, 300);
+    });
+  </script>
+</body>
+</html>
