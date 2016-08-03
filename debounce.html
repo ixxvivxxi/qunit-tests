@@ -15,17 +15,10 @@
       return function() {
         var context = this,
         args = arguments;
-
-        var callNow = false && !timeout;
-
         clearTimeout(timeout);
-
         timeout = setTimeout(function() {
-          timeout = null;
           func.apply(context, args);
         }, wait);
-
-        if (callNow) func.apply(context, args);
       };
     }
 

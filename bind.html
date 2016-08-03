@@ -11,10 +11,17 @@
   <script src="https://code.jquery.com/qunit/qunit-2.0.1.js"></script>
   <script>
     function bind(func, context) {
+      var args = arguments;
       return function() {
-        return func.apply(context, arguments);
+        var arr = Array.prototype.slice.call(arguments);
+        if (args.length > 1) {
+          arr.push(args[1]);
+          arr.reverse();
+        }
+        return func.apply(context, arr);
       };
     }
+
 
     QUnit.test('это функция', function(assert) {
       assert.equal(typeof(bind), 'function');
@@ -46,6 +53,18 @@
         done();
       }, 200);
     });
+
+    QUnit.test('currying', function(assert) {
+      var a = function (a, b) {
+        return a + b;
+      };
+      var func = bind(a, "Барсик ");
+
+      assert.equal(func("кушает"), "Барсик кушает");
+      assert.equal(func("спит"), "Барсик спит");
+    });
+
+
 
   </script>
 </body>
