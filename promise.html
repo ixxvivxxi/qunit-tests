@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8 />
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.0.1.css">
+</head>
+<body>
+  <h1>Tests</h1>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="https://code.jquery.com/qunit/qunit-2.0.1.js"></script>
+  <script>
+
+  function promise(func) {
+    var state = 'pending';
+
+    var promiseValue;
+    var startThen = null;
+
+    function resolve(value) {
+      try {
+        state = 'fulfilled';
+        promiseValue = value;
+
+        if (typeof(startThen) === 'function') {
+          startThen();
+        }
+      } catch (e) {
+          reject(e);
+      }
+    }
+
+    function reject(e) {
+      state = 'rejected';
+      promiseValue = e;
+
+      if (typeof(startThen) === 'function') {
+        startThen();
+      }
+    }
+
+    function runThen(onFulfilled, onRejected, thenResolve, thenReject) {
+
+      if (state === 'pending') {
+        startThen = function() {
+          runThen(onFulfilled, onRejected, thenResolve, thenReject);
+        };
+        return;
+      }
+
+      var thenFunc;
+
+      if (state === 'fulfilled') {
+          thenFunc = onFulfilled;
+      } else {
+          thenFunc = onRejected;
+      }
+
+      var value;
+
+      try {
+          value = thenFunc(promiseValue);
+          thenResolve(value);
+      } catch (e) {
+          if (onRejected) {
+            onRejected(e);
+          }
+          thenReject(e);
+      }
+    }
+
+    this.then = function(onFulfilled, onRejected) {
+      return new promise(function (resolve, reject) {
+        runThen(onFulfilled, onRejected, resolve, reject);
+      });
+    }
+
+    func(resolve, reject);
+  }
+
+
+
+
+  QUnit.test('is function', function(assert) {
+    assert.equal(typeof(promise), 'function');
+  });
+
+  QUnit.test('promise returns resolve value', function(assert) {
+    function myPromise() {
+      return new promise(function(resolve, reject) {
+        resolve('test');
+      });
+    }
+    myPromise().then(function(value) {
+      assert.equal(value, 'test');
+    });
+  });
+
+  QUnit.test('promise returns reject value', function(assert) {
+    function myPromise() {
+      return new promise(function(resolve, reject) {
+        reject('test');
+      });
+    }
+    myPromise().then(null,function(value) {
+      assert.equal(value, 'test');
+    });
+  });
+
+  QUnit.test('then catching errors', function(assert) {
+    function myPromise() {
+      return new promise(function(resolve, reject) {
+        resolve('test');
+      });
+    }
+    myPromise().then(function(value) {
+      throw 'error';
+    }, function(error) {
+      assert.equal(error, 'error');
+    });
+  });
+
+
+  </script>
+</body>
+</html>
