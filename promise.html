@@ -62,9 +62,9 @@
           value = thenFunc(promiseValue);
           thenResolve(value);
       } catch (e) {
-          if (onRejected) {
-            onRejected(e);
-          }
+          // if (onRejected) {
+          //   onRejected(e);
+          // }
           thenReject(e);
       }
     }
@@ -115,10 +115,26 @@
     }
     myPromise().then(function(value) {
       throw 'error';
-    }, function(error) {
+    }).then(null,function(error) {
       assert.equal(error, 'error');
     });
   });
+
+  QUnit.test('promise works async', function(assert) {
+    var done = assert.async();
+    function myPromise() {
+      return new promise(function(resolve, reject) {
+        setTimeout(function() {
+          resolve('async');
+        }, 1000);
+      });
+    }
+    myPromise().then(function(value) {
+        assert.equal(value, 'async');
+        done();
+    });
+  });
+
 
 
   </script>
